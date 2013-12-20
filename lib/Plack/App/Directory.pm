@@ -69,7 +69,10 @@ sub serve_path {
         return $self->return_dir_redirect($env);
     }
 
-    my @files = ([ "../", "Parent Directory", '', '', '' ]);
+    my $root = $self->root;
+    $root .= '/' unless substr( $root, -1, 1 ) eq '/';
+
+    my @files;
 
     my $dh = DirHandle->new($dir);
     my @children;
@@ -78,10 +81,15 @@ sub serve_path {
         push @children, $ent;
     }
 
+    $dir =~ s{\.$}{};
+
+    if ($dir ne $root ) {
+        push @files, [ "../", "Parent Directory", '', '', '' ];
+    }
+
     for my $basename (sort { $a cmp $b } @children) {
         my $file = "$dir/$basename";
         my $url = $dir_url . $basename;
-
         my $is_dir = -d $file;
         my @stat = stat _;
 

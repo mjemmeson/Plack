@@ -8,7 +8,6 @@ use Plack::App::Directory;
 
 my $handler = Plack::App::Directory->new({ root => 'share' });
 
-
 my %test = (
     client => sub {
         my $cb  = shift;
@@ -29,6 +28,12 @@ my %test = (
 
         $res = $cb->(GET "/");
         like $res->content, qr/Index of \//;
+
+        $res = $cb->(GET "/bar/");
+        like $res->content, qr/Parent Directory/;
+
+        $res = $cb->(GET "/");
+        unlike $res->content, qr/Parent Directory/;
 
     SKIP: {
             skip "Filenames can't end with . on windows", 2 if $^O eq "MSWin32";
