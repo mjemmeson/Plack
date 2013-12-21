@@ -9,6 +9,8 @@ use DirHandle;
 use URI::Escape;
 use Plack::Request;
 
+use Plack::Util::Accessor qw( limit_at_root );
+
 # Stolen from rack/directory.rb
 my $dir_file = "<tr><td class='name'><a href='%s'>%s</a></td><td class='size'>%s</td><td class='type'>%s</td><td class='mtime'>%s</td></tr>";
 my $dir_page = <<PAGE;
@@ -72,8 +74,6 @@ sub serve_path {
     my $root = $self->root;
     $root .= '/' unless substr( $root, -1, 1 ) eq '/';
 
-    my @files;
-
     my $dh = DirHandle->new($dir);
     my @children;
     while (defined(my $ent = $dh->read)) {
@@ -83,7 +83,8 @@ sub serve_path {
 
     $dir =~ s{\.$}{};
 
-    if ($dir ne $root ) {
+    my @files;
+    if ( !$self->limit_at_root or $dir ne $root ) {
         push @files, [ "../", "Parent Directory", '', '', '' ];
     }
 
